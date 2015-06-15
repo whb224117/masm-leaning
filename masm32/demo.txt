@@ -1,0 +1,4 @@
+ml /c /coff /Cp test.asm  == test.obj
+;/c 表示编译 /coff 表示coff格式文件 /Cp 忽略大小写
+link /subsystem:windows test.obj test.res 
+

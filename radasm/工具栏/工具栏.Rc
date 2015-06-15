@@ -1,0 +1,39 @@
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#define ICO_MAIN     0x1003
+#define ICO_MAIN2    0x1004
+#define CUR_2        0x1002
+#define IDM_MAIN     0x2000
+#define IDM_EXIT     0x2101
+#define IDM_BIG      0x2201
+#define IDM_SMALL    0x2202
+#define IDM_CUR1     0x2203
+#define IDM_CUR2     0x2204
+#define ID_EDIT    2
+#define ID_TOOLBAR 1
+#define IDM_NEW  0x1234
+#define IDM_OPEN 0x1235
+
+CUR_2        CURSOR  "3.cur"
+ICO_MAIN 	 ICON 	"1.ico"
+ICO_MAIN2 	 ICON 	"2.ico"
+IDM_MAIN     menu    discardable
+BEGIN
+     popup "文件(&F)"
+     BEGIN
+           menuitem   "退出(&X)",   IDM_EXIT
+     END
+     popup "图标和光标(&I)"
+     BEGIN
+           menuitem   "大图标(&G)",IDM_BIG
+           menuitem   "小图标(&M)",IDM_SMALL
+           menuitem   separator
+           menuitem   "光标A(&A)",IDM_CUR1
+           menuitem   "光标B(&B)",IDM_CUR2
+     END
+    
+END
+stringtable discardable
+BEGIN
+     IDM_NEW "NEW"
+     IDM_OPEN "OPEN"
+END

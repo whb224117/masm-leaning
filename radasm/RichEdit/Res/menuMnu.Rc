@@ -1,0 +1,39 @@
+#define IDM_MAIN 2000
+#define IDM_OPEN 2101
+#define IDM_SAVE 2102
+#define IDM_EXIT 2103
+#define IDM_UNDO 2201
+#define IDM_REDO 2202
+#define IDM_SELALL 2203
+#define IDM_COPY 2204
+#define IDM_CUT 2205
+#define IDM_PASTE 2206
+#define IDM_FIND 2207
+#define IDM_FINDPREV 2208
+#define IDM_FINDNEXT 2209
+#define IDM_ABOUT 2210
+IDM_MAIN MENUEX
+BEGIN
+  POPUP "&File"
+  BEGIN
+    MENUITEM "Open File...\tCtrl + O",IDM_OPEN
+    MENUITEM "Save File\tCtrl+S",IDM_SAVE
+    MENUITEM "",,0x00000800
+    MENUITEM "Exit",IDM_EXIT
+  END
+  POPUP "&Edit"
+  BEGIN
+    MENUITEM "Un do \tCtrl+Z",IDM_UNDO
+    MENUITEM "Re do \tCtrl+R",IDM_REDO
+    MENUITEM "",,0x00000800
+    MENUITEM "Select All \tCtrl+A",IDM_SELALL
+    MENUITEM "Copy \tCtrl+C",IDM_COPY
+    MENUITEM "Cut \tCtrl+X",IDM_CUT
+    MENUITEM "Paste \tCtrl+V",IDM_PASTE
+    MENUITEM "",,0x00000800
+    MENUITEM "Find \tCtrl+F",IDM_FIND
+    MENUITEM "Find Prev\tF2",IDM_FINDPREV
+    MENUITEM "Find Next\tF3",IDM_FINDNEXT
+  END
+  MENUITEM "&About",IDM_ABOUT
+END

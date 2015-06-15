@@ -1,0 +1,18 @@
+EXE = test4.exe       #指定输出文件
+OBJS = test4.obj      #需要的目标文件
+RES = test.res        #需要的资源文件
+#设置变量
+LINK_FLAG = /subsystem:windows  	#连接选项
+ML_FLAG = /c /coff                 	#编译选项
+
+$(EXE): $(OBJS) $(RES)
+            link $(LINK_FLAG) $(OBJS) $(RES)
+
+#变量的应用
+.asm.obj:
+      ml $(ML_FLAG) $<
+.rc.res:
+     rc $<
+clean:
+  del *.obj
+  del *.res

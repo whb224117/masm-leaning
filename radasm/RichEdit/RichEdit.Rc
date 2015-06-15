@@ -1,0 +1,5 @@
+#define  IDA_MAIN	2000
+#define	 iconMain	10
+iconMain	icon	"main.ico"
+#include "Res/menuMnu.rc"
+#include "Res/RichEditAcl.rc"

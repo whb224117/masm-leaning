@@ -1,0 +1,99 @@
+[Project]
+Assembler=masm
+Type=Win32 窗口程序
+Description=负一楼QQ连连看汇编写挂示例程序
+Backup=$P\Bak\
+Group=1
+GroupExpand=1
+Res.rc=1
+调试=1
+[Files]
+1=QQllk.Asm
+2=QQllk.Inc
+3=QQllk.Rc
+4=QQllk.Txt
+5=MainDlg.dlg
+[MakeFiles]
+0=QQllk.rap
+1=QQllk.rc
+2=QQllk.asm
+3=QQllk.obj
+4=QQllk.res
+5=QQllk.exe
+6=QQllk.def
+7=QQllk.dll
+8=QQllk.txt
+9=QQllk.lib
+10=QQllk.mak
+11=QQllk.hla
+12=QQllk.com
+13=QQllk.ocx
+14=QQllk.idl
+15=QQllk.tlb
+16=QQllk.sys
+[MakeDef]
+Menu=1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0
+1=4,O,$B\RC.EXE /I"$I" /v,1
+2=3,O,$B\ML.EXE /c /coff /Cp /nologo /I"$I",2
+3=5,O,$B\LINK.EXE /SUBSYSTEM:WINDOWS /COMMENT:此程序来自***(***) /RELEASE /VERSION:4.0 /LIBPATH:"$L" /OUT:"$5",3,4
+4=0,0,,5
+5=3,O,$B\CVTRES.EXE,4
+6=9,O,$B\LIB.EXE,3
+7=0,0,"$E\OllyICE",5
+11=4,O,$B\RC.EXE /I"$I" /v,1
+12=3,O,$B\ML.EXE /c /coff /Cp /Zi /Zd /nologo /I"$I",2
+13=5,O,$B\LINK.EXE /SUBSYSTEM:WINDOWS /DEBUG /DEBUGTYPE:CV /VERSION:4.0 /LIBPATH:"$L" /OUT:"$5",3,4
+14=0,0,,5
+15=rsrc.obj,O,$B\CVTRES.EXE,rsrc.res
+16=9,O,$B\LIB.EXE /NOLOGO,3
+17=0,0,"$E\OllyICE",5
+[Resource]
+1=ICO_MAIN,1000,2,main.ico
+[StringTable]
+[Accel]
+[VerInf]
+[Group]
+Group=添加的文件,主程序文件,资源文件,其它,模块
+1=2
+2=2
+3=3
+4=4
+5=3
+[AutoLoad]
+AutoLoad=1,5,3
+[RADebugBP]
+3=
+1=
+[Find]
+1="#define "
+[Collapse]
+3=
+1=
+[Size]
+3=0,0,0,0,35
+5=0,0,0,0
+1=0,0,0,0,2200
+[Colref]
+0=00FFFFFF
+1=00FFFFFF
+2=00FFFFFF
+3=00FFFFFF
+4=00FFFFFF
+5=00FFFFFF
+6=00FFFFFF
+7=00FFFFFF
+[GroupExpand]
+GroupExpand=0,0,0,1,1,0
+[BookMark]
+0=
+1=
+2=
+3=
+4=
+5=
+6=
+7=
+8=
+9=
+[BreakPoint]
+0=

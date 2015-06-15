@@ -1,0 +1,130 @@
+
+FPU	float point unit 浮点运算单元
+分为两个部分 控制单元和运算单元 控制单元主要面向CPU 运算单元主要负责具体算术运算
+FPU 包括八个通用寄存器，五个错误指针寄存器和三个控制寄存器
+1.八个通用寄存器每个80bit形成一个寄存器堆栈，所有的计算结果都保存在寄存器堆栈中，气质那个数据格式全部是八十位的扩展精度格式
+即使是BCD，整数，单精度，双精度等装在寄存器的时候都要被FPU自动转化为八十位的扩展精度格式，
+栈顶通常表示为ST(0),然后是ST(1)...ST(i),ST(i)是相对于栈顶而言的。
+2.FPU有三个控制寄存器，状态寄存器，控制寄存器，标记寄存器
+
+st(i)：代表浮点寄存器，所说的出栈、入栈操作都是对st(i)的影响 
+src,dst,dest,op等都是指指令的操作数，src表示源操作数，dst/dest表示目的操作数 
+mem8,mem16,mem32,mem64,mem80等表示是内存操作数，后面的数值表示该操作数的内存位数（8位为一字节） 
+x <- y 表示将y的值放入x，例st(0) <- st(0) - st(1)表示将st(0)-st(1)的值放入浮点寄存器st(0)
+1． 数据传递和对常量的操作指令
+指令格式 指令含义 执行的操作
+FLD src   装入实数到st(0)   st(0) <- src (mem32/mem64/mem80) 
+FILD src 装入整数到st(0) st(0) <- src (mem16/mem32/mem64)
+FBLD src 装入BCD数到st(0) st(0) <- src (mem80)
+
+FLDZ 将0.0装入st(0)   st(0) <- 0.0 
+FLD1 将1.0装入st(0)   st(0) <- 1.0 
+FLDPI 将pi装入st(0)   st(0) <- ?(ie, pi)
+FLDL2T 将log2(10)装入st(0) st(0) <- log2(10)
+FLDL2E 将log2(e)装入st(0) st(0) <- log2(e)
+FLDLG2 将log10(2)装入st(0) st(0) <- log10(2)
+FLDLN2 将loge(2)装入st(0) st(0) <- loge(2)
+
+FST dest 保存实数st(0)到dest dest <- st(0) (mem32/mem64)
+FSTP dest       dest <- st(0) (mem32/mem64/mem80)；然后再执行一次出栈操作
+FIST dest 将st(0)以整数保存到dest dest <- st(0) (mem32/mem64) 
+FISTP dest       dest <- st(0) (mem16/mem32/mem64)；然后再执行一次出栈操作
+FBST dest 将st(0)以BCD保存到dest dest <- st(0) (mem80) 
+FBSTP dest        dest<- st(0) (mem80)；然后再执行一次出栈操作
+
+2．比较指令 
+指令格式 指令含义 执行的操作
+FCOM   实数比较 将标志位设置为 st(0) - st(1) 的结果标志位
+FCOM op   实数比较 将标志位设置为 st(0) - op (mem32/mem64)的结果标志位
+
+FICOM op 和整数比较 将Flags值设置为st(0)-op 的结果op (mem16/mem32)
+FICOMP op 和整数比较 将st(0)和op比较 op(mem16/mem32)后；再执行一次出栈操作
+
+FTST    零检测 将st(0)和0.0比较
+FUCOM st(i) 比较st(0) 和st(i)                  [486]
+FUCOMP st(i)    比较st(0) 和st(i)，并且执行一次出栈操作
+FUCOMPP st(i)   比较st(0) 和st(i)，并且执行两次出栈操作
+FXAM      Examine: Eyeball st(0) (set condition codes)
+3．运算指令 
+指令格式 指令含义 执行的操作
+加法
+FADD   加实数   st(0) <-st(0) + st(1)
+FADD src      st(0) <-st(0) + src (mem32/mem64)
+FADD st(i),st      st(i) <- st(i) + st(0)
+FADDP st(i),st       st(i) <- st(i) + st(0)；然后执行一次出栈操作
+FIADD src   加上一个整数 st(0) <-st(0) + src (mem16/mem32)
+减法
+FSUB   减去一个实数 st(0) <- st(0) - st(1)
+FSUB src      st(0) <-st(0) - src (reg/mem)
+FSUB st(i),st      st(i) <-st(i) - st(0)
+FSUBP st(i),st      st(i) <-st(i) - st(0)，然后执行一次出栈操作
+FSUBR st(i),st 用一个实数来减 st(0) <- st(i) - st(0)
+FSUBRP st(i),st      st(0) <- st(i) - st(0)，然后执行一次出栈操作
+FISUB src 减去一个整数 st(0) <- st(0) - src (mem16/mem32)
+FISUBR src 用一个整数来减 st(0) <- src - st(0) (mem16/mem32)
+
+乘法
+FMUL   乘上一个实数 st(0) <- st(0) * st(1)
+FMUL st(i)      st(0) <- st(0) * st(i)
+FMUL st(i),st      st(i) <- st(0) * st(i)
+FMULP st(i),st      st(i) <- st(0) * st(i)，然后执行一次出栈操作
+FIMUL src 乘上一个整数 st(0) <- st(0) * src (mem16/mem32)
+
+除法
+FDIV    除以一个实数 st(0) <-st(0) /st(1)
+FDIV st(i)      st(0) <- st(0) /t(i)
+FDIV st(i),st      st(i) <-st(0) /st(i)
+FDIVP st(i),st      st(i) <-st(0) /st(i)，然后执行一次出栈操作
+FIDIV src 除以一个整数 st(0) <- st(0) /src (mem16/mem32)
+FDIVR st(i),st 用实数除 st(0) <- st(i) /st(0)
+FDIVRP st(i),st      FDIVRP st(i),st
+FIDIVR src 用整数除 st(0) <- src /st(0) (mem16/mem32)
+
+FSQRT   平方根   st(0) <- sqrt st(0)
+
+FSCALE   2的st(0)次方 st(0) <- 2 ^ st(0)
+FXTRACT Extract exponent: st(0) <-exponent of st(0); and gets pushed 
+st(0) <-significand of st(0) 
+
+FPREM    取余数 st(0) <-st(0) MOD st(1)
+FPREM1   取余数（IEEE），同FPREM，但是使用IEEE标准[486]        
+FRNDINT 取整（四舍五入） st(0) <- INT( st(0) ); depends on RC flag
+
+FABS   求绝对值 st(0) <- ABS( st(0) ); removes sign
+FCHS   改变符号位(求负数） st(0) <-st(0)
+
+F2XM1   计算(2 ^ x)-1 st(0) <- (2 ^ st(0)) - 1
+FYL2X   计算Y * log2(X) st(0)为Y；st(1)为X；将st(0)和st(1)变为st(0) * log2( st(1) )的值
+
+FCOS   余弦函数Cos st(0) <- COS( st(0) )
+FPTAN   正切函数tan st(0) <- TAN( st(0) )
+FPATAN   反正切函数arctan st(0) <- ATAN( st(0) )
+FSIN   正弦函数sin st(0) <- SIN( st(0) )
+FSINCOS   sincos函数 st(0) <-SIN( st(0) )，并且压入st(1)
+st(0) <- COS( st(0) )        
+FYL2XP1 计算Y * log2(X+1) st(0)为Y； st(1)为X；将st(0)和st(1)变为st(0) * log2( st(1)+1 )的值
+
+处理器控制指令
+FINIT   初始化FPU   
+FSTSW AX 保存状态字的值到AX AX<- MSW
+FSTSW dest 保存状态字的值到dest dest<-MSW (mem16)
+      
+FLDCW src 从src装入FPU的控制字 FPU CW <-src (mem16)
+FSTCW dest 将FPU的控制字保存到dest dest<- FPU CW
+      
+FCLEX    清除异常   
+      
+FSTENV dest 保存环境到内存地址dest处保存状态字、控制字、标志字和异常指针的值
+FLDENV src 从内存地址src处装入保存的环境   
+FSAVE dest 保存FPU的状态到dest处 94字节   
+FRSTOR src 从src处装入由FSAVE保存的FPU状态   
+FINCSTP   增加FPU的栈指针值 st(6) <-st(5); st(5) <-st(4),...,st(0) <-?
+FDECSTP   减少FPU的栈指针值 st(0) <-st(1); st(1) <-st(2),...,st(7) <-?       
+FFREE st(i) 标志寄存器st(i)未被使用         
+FNOP    空操作，等同CPU的nop st(0) <-st(0)
+WAIT/FWAIT 同步FPU与CPU：停止CPU的运行，直到FPU完成当前操作码
+
+FXCH   交换指令，交换st(0)和st(1)的值 st(0) <-st(1) 
+st(1) <- st(0)
+
+fromyes.163@qq.com

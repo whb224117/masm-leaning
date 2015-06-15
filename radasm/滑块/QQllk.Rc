@@ -1,0 +1,3 @@
+#include "Res/MainDlgDlg.rc"
+#include "Res/QQllkRes.rc"
+1 24 "xpstyle.manifest"

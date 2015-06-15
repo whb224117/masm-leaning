@@ -1,0 +1,90 @@
+ContinueDebugEvent //继续被调试进程 
+DebugActiveProcess //调试一个正在运行的进程 
+DebugBreak//产生一次调试中断 
+FatalExit//退出调试 
+FlushInstructionCache //清空指令缓存 
+GetThreadContext//取得目标线程环境块 bitscn.com 
+GetThreadSelectorEntry //取得线程选择子入口 
+IsDebuggerPresent//进程是否被调试 
+OutputDebugString//输出调试信息 
+ReadProcessMemory//读取目标进程内存空间 
+ReadProcessMemoryVlm //读取特定进程空间内存 
+SetDebugErrorLevel//设定被调试进程错误通知等级 
+SetThreadContext//设置目标线程环境 
+WaitForDebugEvent //等待目标进程产生调试时间 
+WriteProcessMemory //写目标进程内存空间 
+WriteProcessMemoryVlm //写特定进程空间内存单元 
+通过这些函数，就可以定制自己的调试器。 
+
+
+//两种进程调试的方法
+
+//一 创建子进程调试
+//创建新进程用于调试。在父进程调用CreateProcess创建被调试进程的时候指定为调试。
+//这样，父进程和子进程之间就是一种调试和被调试的关系。在进程被完全装入内存空间后，系统会将子进程挂起，
+//并调用DBGBreakPoint产生一次int 3中断，当调试器处理完这个int 3中断后，程序才会继续执行。
+
+//二 调用DebugActiveProcess绑定正在运行的进程
+//要调试正在运行的进程，调试器必须首先获得对目标进程的调试权限。 
+//对于Administrator运行的调试器来说，默认情况下可以获得所有非SYSTEM用户组用户所创建的进程的调试权。
+//对于SYSTEM用户组的进程，比如Lsass，Winlogon，svchost等，就必须先提升调试器进程的权能，授予自己调试权能，实现对这些系统进程的调试 
+
+三、调试器主循环 
+在完成调试前的准备工作后，调试器循环调用WaitForDebugEvent等待调试事件的产生，然后进行相应的处理。
+WaitForDebugEvent是一个可阻塞的函数，当被调试进程没有调试事件产生时，调试器不会因为大量的循环工作而消耗CPU时间。
+ 
+四、同时调试多个进程 
+调试器可以同时调试多个进程。每个被调试的进程都必须有一个相应的调试线程与之对应。
+在这个调试线程里面必须实现全部的包括绑定目标进程、调试循环在内的所有的调试器功能，
+这就意味着在系统中是以线程为单位通知相应的调试事件的。这就使得我们可以通过一个进程监控多个进程。
+
+如果线程报告发生了一个异常调试事件,这意味着在debuggee的线程中发生了一个异常.如果指定了DBG_CONTINUE,线程将忽略它自己的异常处理部分并继续执行.
+在这种情况下,我们的程序必须在以DBG_CONTINUE恢复线程之前检查并处理异常,否则异常将生生不息地不断发生....
+如果我们指定了 DBG_EXCEPTION_NOT_HANDLED值,就是告诉Windows我们的程序并不处理异常:Windows将使用debuggee的默认异常处理函数来处理异常. 
+
+ContinueDebugEvent  的第二个参数
+在下面这种情况下必须使用DBG_CONTINUE标志:
+第一个在ExceptionCode成员中有值EXCEPTION_BREAKPOINT的 EXCEPTION_DEBUG_EVENT事件.
+当debuggee开始执行它的第一条指令时,我们的函数将接受到异常调试事件.它事实上是一个调试中断(int 3h).
+如果我们以DBG_EXCEPTION_NOT_HANDLED调用ContinueDebugEvent 来响应调试事件, Windows NT会拒绝执行debuggee(因为它没有异常处理).
+所以在这种情况下,要用DBG_CONTINUE标志告诉Windows我们希望该线程继续执行.
+
+
+
+CONTEXT结构包括以下部分：
+CONTEXT_CONTROL:包含CPU的控制寄存器,比如指今指针,堆栈指针,标志和函数返回地址..AX, BX, CX, DX, SI, D
+CONTEXT_INTEGER:用于标识CPU的整数寄存器.DS, ES, FS, GS
+CONTEXT_FLOATING_POINT:用于标识CPU的浮点寄存器.
+CONTEXT_SEGMENTS:用于标识CPU的段寄存器.SS:SP, CS:IP, FLAGS, BP
+CONTEXT_DEBUG_REGISTER:用于标识CPU的调试寄存器.  
+CONTEXT_EXTENDED_REGISTERS:用于标识CPU的扩展寄存器I
+CONTEXT_FULL:相当于CONTEXT_CONTROL or CONTEXT_INTEGER or   CONTEXT_SEGMENTS,即这三个标志的组合
+
+我们可以使用GetThreadContext函数来查看线程内核对象的内部，并获取当前CPU寄存器状态的集合。
+BOOL GetThreadContext (
+HANDLE  hThread,
+PCONTEXT  pContext)；
+若要调用该函数，只需指定一个CONTEXT结构，对某些标志（该结构的ContextFlags成员）进行初始化，指明想要收回哪些寄存器，并将该结构的地址传递给GetThreadContext 。然后该函数将数据填入你要求的成员。
+在调用GetThreadContext函数之前，应该调用SuspendThread，否则，线程可能刚好被调度，这样一来，线程的上下文就和所获取的信息不一致了。
+示例代码如下： 
+CONTEXT Context;　　　　　　　　　　　　　　　　  //定义一个CONTEXT结构
+Context.ContextFlags = CONTEXT_CONTROL;　　  //告诉系统我们想获取线程控制寄存器的内容   
+GetThreadContext(hThread, &Context);　　　　　　//调用GetThreadContext获取相关信息
+Ps：在调用GetThreadContext函数之前，必须首先初始化CONTEXT结构的ContextFlags成员。
+要获得线程的所有重要的寄存器(也就是微软认为最常用的寄存器)，应该像下面一样初始化ContextFlags：
+Context.ContextFlags = CONTEXT_FULL;
+在WinNT. h头文件中，定义了CONTEXT_FULL为CONTEXT_CONTROL | CONTEXT_INTEGER | CONTEXT_SEGMENTS。
+
+当然，我们还可以通过调用SetThreadContext函数来改变结构中的成员，并把新的寄存器值放回线程的内核对象中
+BOOL SetThreadContext (
+HANDLE  hThread,
+CONST CONTEXT  *pContext)；
+同样，如果要改变哪个线程的上下文，应该先暂停该线程。       
+CONTEXT Context;　　　　　　//定义一个CONTEXT结构      
+SuspendThread(hThread);　　//挂起线程  
+Context.ContextFlags = CONTEXT_CONTROL;　　 //获取当前上下文的值
+GetThreadContext(hThread, &Context);
+Context.Eip = 0x00010000;　　　　　　//Eip字段存储的是指令指针，现在让指令指针指向地址 0x00010000；
+Context.ContextFlags = CONTEXT_CONTROL;
+SetThreadContext(hThread, &Context); 　　//重新设置线程上下文
+ResumeThread(hThread);         //恢复线程，现在线程开始从0x00010000这个地方开始执行指令

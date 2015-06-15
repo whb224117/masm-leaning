@@ -1,0 +1,42 @@
+
+//原子锁++(lock)
+InterlockedIncrement( &g_nValue2 );	//当一个线程对&g_nValue2 地址的变量进行加1运算时 其他线程不允许介入
+
+004010D3   mov         esi,esp
+004010D5   push        offset g_nValue2 (00427c4c)	;push  &g_nValue2   传递g_nValue2地址 
+初始化g_nValue2的值为0
+
+004010DA   call        dword ptr [__imp__InterlockedIncrement@4 (0042a150)]	;call 7769F128
+004010E0   cmp         esi,esp
+004010E2   call        __chkesp (004012c0)
+
+7769F128   mov         edi,edi
+7769F12A   push        ebp
+7769F12B   mov         ebp,esp
+7769F12D   pop         ebp
+上面四条指令什么都没做
+7769F12E   jmp         7769EFC0
+
+7769EFC0   mov         ecx,dword ptr [esp+4]	;把g_nValue2的地址传递到ecx，g_nValue2 = 0
+7769EFC4   mov         eax,1			;eax = 1
+7769EFC9   lock xadd   dword ptr [ecx],eax	; g_nValue2  = g_nValue2 + 1
+执行完成后 eax = 0，[ecx] = 1
+xadd 交换第一个操作数（目标操作数）与第二个操作数（源操作数），
+然后将这两个值的和加载到目标操作数。目标操作数可以是寄存器或内存位置；源操作数是寄存器。
+7769EFCD   inc         eax			;eax+1
+7769EFCE   ret         4			;返回
+
+lock 封锁指令 可作为其他指令的前缀联合使用，以保持总线封锁信号 使指令的目的操作数指定的存储区域锁定，以得到保护
+xadd 先交换两个操作数的值，在进行算术加法操作，多处理器安全
+cmpxchg 比较交换指令，第一操作数先和al/ax/eax比较，如果相等zf置1，第二操作数赋值给第一操作数
+否则zf清0，第一操作数赋值给al/ax/eax，多处理器安全
+xchg 交换两个操作数，其中至少有一个是寄存器寻址，其他寄存器和标志位不受影响
+
+在多处理器环境中，LOCK# 信号确保在声言该信号期间，处理器可以独占使用任何共享内存。
+LOCK 前缀只能用在以下指令的前面，并且仅限使用内存操作数形式的这些指令：
+ADD、ADC、AND、BTC、BTR、BTS、CMPXCHG、DEC、INC、NEG、NOT、OR、SBB、SUB、XOR、XADD 及 XCHG。
+如果同其它任何指令一起使用 LOCK 前缀，则生成操作码未定义异常。
+不论是否使用 LOCK 前缀，XCHG 指令总是声言 LOCK# 信号。
+
+
+

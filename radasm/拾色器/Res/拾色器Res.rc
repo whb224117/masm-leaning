@@ -1,0 +1,2 @@
+#define IDI_APP_ICON							1000
+IDI_APP_ICON				ICON      DISCARDABLE "Res/main.ico"

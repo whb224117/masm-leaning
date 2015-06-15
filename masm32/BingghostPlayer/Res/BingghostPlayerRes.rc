@@ -1,0 +1,2 @@
+#define ICON_APP			1600
+ICON_APP		ICON      DISCARDABLE "../../../X.ico"
